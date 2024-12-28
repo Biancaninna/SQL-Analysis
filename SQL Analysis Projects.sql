@@ -1,16 +1,16 @@
 -- SQL Analysis Project
 
---	1. Total revenue on all sales
+--	1. Total Revenue 
 		select round(sum(store.products.unit_price_USD
 						*store.sales.quantity), 2) as Total_Revenue
         from store.products
 			join store.sales on (store.products.product_key=store.sales.product_key);
 
---	2. Total Profit on all sales
+--	2. Total Profit 
 		select round(sum(store.products.unit_price_USD
 						*store.sales.quantity), 2) as Total_Reveue,
 				round(sum(store.products.unit_cost_USD
-						*store.sales.quantity), 2) as Total_Cost,
+						*store.sales.quantity), 2) as Production_Cost,
 				round((select round(sum(store.products.unit_price_USD
 						*store.sales.quantity), 2)
                         -round(sum(store.products.unit_cost_USD
@@ -18,8 +18,8 @@
 		from store.products
 			join store.sales on (store.products.product_key=store.sales.product_key);
 
---	3. Total Quantity on all sales
-		select sum(store.sales.quantity) as Total_Quantity
+--	3. Total Product Sold
+		select sum(store.sales.quantity) as Total_Product_Sold
 				from store.sales
 
 --	4. Year Over Year Sales
@@ -29,7 +29,7 @@
 		from store.sales
             join store.products on (store.products.product_key=store.sales.product_key)
 				group by Year(store.sales.order_date))
-		select c1.*, round((((c1.Sales - c2.Sales) / c2.Sales) * 100),2) as Percent_Growth
+		select c1.*, round((((c1.Sales - c2.Sales) / c2.Sales) * 100),2) as Percent_growth
 		from cte c1
 			left join cte c2 on c1.Year = c2.Year + 1
 
@@ -42,16 +42,16 @@
 		from store.sales
             join store.products on (store.products.product_key=store.sales.product_key)
 				group by Year(store.sales.order_date))
-		select c1.*, round((((c1.Profit - c2.Profit) / c2.Profit) * 100),2) as Percent_Growth
+		select c1.*, round((((c1.Profit - c2.Profit) / c2.Profit) * 100),2) as Percent_growth
 		from cte c1
 			left join cte c2 on c1.Year = c2.Year + 1
 
---	6. Year Over Year Quantity Sold
+--	6. Year Over Year Product Sold
 		with cte as(select year(store.sales.order_date) as Year,
 						sum(store.sales.quantity) as Quantity
 		from store.sales
 			group by year(store.sales.order_date))
-        select c1.*, round((((c1.Quantity - c2.Quantity)/c2.Quantity)*100),2) as Percent_Growth
+        select c1.*, round((((c1.Quantity - c2.Quantity)/c2.Quantity)*100),2) as Percent_growth
         from cte c1
 			left join cte c2 on c1.Year=c2.Year+1
             
@@ -62,30 +62,30 @@
 --	8. Average Order Value
 		select round((sum(store.products.unit_price_USD
 						*store.sales.quantity))/
-				(count(distinct store.sales.order_number)), 2) as avg_order_value
+				(count(distinct store.sales.order_number)), 2) as Avg_Order_Value
 		from store.products
 			join store.sales on (store.products.product_key=store.sales.product_key)
             
 --	9. Average Product Per Order
 		select round((sum(store.sales.quantity))/
-				(count(distinct store.sales.order_number)), 2) as avg_product_per_order
+				(count(distinct store.sales.order_number)), 2) as Avg_Product_Per_Order
 		from store.sales
         
 --	10. Daily Trend For Total Order
-		select dayofweek(store.sales.order_date) as day_number,
-					dayname(store.sales.order_date) as dayname,
+		select dayofweek(store.sales.order_date) as Day_number,
+					dayname(store.sales.order_date) as Day_Name,
 						count(distinct store.sales.order_number) as Total_Order
 		from store.sales
-				group by day_number, dayname
-					order by day_number
+				group by Day_number, Day_Name
+					order by Day_number
                     
 --	11. Monthly Trend For Total Order
-		select month(store.sales.order_date) as month_number,
-				monthname(store.sales.order_date) as month_name,
+		select month(store.sales.order_date) as Month_Number,
+				monthname(store.sales.order_date) as Month_Name,
 					count(distinct store.sales.order_number) as Total_Order
 		from store.sales
-			group by month_number, month_name
-				order by month_number
+			group by Month_number, Month_name
+				order by Month_number
 
 --	12. Top 3 Category by Total Sales in 2021
 		select store.products.category as Category,
@@ -131,12 +131,12 @@
 
 --	16. Top 3 Category by Total Orders in 2021
 		select store.products.category as Category,
-					count(distinct store.sales.order_number) as Total_Order
+					count(distinct store.sales.order_number) as Total_Orders
 		from store.products
 			join store.sales on (store.sales.product_key = store.products.product_key)
 				where year(store.sales.order_date) = 2021
 		group by Category
-			order by Total_Order desc
+			order by Total_Orders desc
 		limit 3
 
 --	17. Bottom 3 Category by Total Orders in 2021
